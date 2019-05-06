@@ -1,3 +1,6 @@
+## Visualization tool for PDP climate exercise
+## Robin B. Trayler May 6, 2019
+## Load required libraries-----------------------------------------------------
 library(shiny)
 library(plotly)
 library(shinythemes)
@@ -45,7 +48,7 @@ server <- shinyServer(function(input, output,session) {
   filedata <- reactive({
     infile <- input$data
     if (is.null(infile))
-      # User has not uploaded a file yet. Use NULL to prevent observeEvent from triggering
+      # if nothing uploaded use NULL to prevent observeEvent from triggering
       return(NULL)
     tbl <- read.csv(infile$datapath)
     return(tbl)
@@ -55,18 +58,24 @@ server <- shinyServer(function(input, output,session) {
   spline <- reactive({ # spine fit uses slider input to control smooting
     infile <- input$data
     if(!is.null(infile)){
-      smooth.spline(filedata()[, input$xval], filedata()[, input$yval], spar = input$smooth)}
+      smooth.spline(filedata()[, input$xval], 
+                    filedata()[, input$yval], 
+                    spar = input$smooth)}
   })
   
   ## Update Menu Options-------------------------------------------------------
   ## update menu options once data is loaded
   ## update x value menu
   observeEvent(filedata(), {
-    updateSelectInput(session, inputId =  "xval", choices = colnames(filedata()))
+    updateSelectInput(session, 
+                      inputId =  "xval", 
+                      choices = colnames(filedata()))
   })
   ## update y value menu
   observeEvent(filedata(), {
-    updateSelectInput(session, inputId =  "yval", choices = colnames(filedata()))
+    updateSelectInput(session, 
+                      inputId =  "yval", 
+                      choices = colnames(filedata()))
   })
   
   ## Plot selected variables---------------------------------------------------
@@ -82,7 +91,8 @@ server <- shinyServer(function(input, output,session) {
   })
   ## Add table to second tab---------------------------------------------------
   output$table <- renderTable(filedata())
-  
+
+  ##---------------------------------------------------------------------------
 })
 
 shinyApp(ui = ui, server = server)
