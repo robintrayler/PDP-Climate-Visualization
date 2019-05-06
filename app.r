@@ -23,7 +23,7 @@ ui <- fluidPage(
                 label = 'Y variable', 
                 choices = c('1','2','3')),
     selectInput(inputId = 'pt.type', # drop down for plotting
-                label = 'display', 
+                label = 'Plot Type', 
                 choices = c('markers','lines')),
 
     sliderInput(inputId = 'smooth', # slider for degree of smooting
