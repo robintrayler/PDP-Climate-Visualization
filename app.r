@@ -1,73 +1,87 @@
 library(shiny)
 library(plotly)
-##-----------------------------------------------------------------------------
-ui <- pageWithSidebar(headerPanel('PDP Visualizer'),
-                      sidebarPanel(
-                        fileInput('data', 'Select a CSV'),
-                        selectInput('xval', 'X variable', choices = c('1','2','3')),
-                        selectInput('yval', 'Y variable', choices = c('1','2','3'), selected = 'Temperature'),
-                        sliderInput('smooth', 'Degree of Smoothing', min = 0, max = 1, value = 0.5, step = 0.01)),
-                      mainPanel(
-                        plotlyOutput('plot')
-                      )
+library(shinythemes)
+## Set up UI-------------------------------------------------------------------
+ui <- fluidPage(
+  ## Set theme-----------------------------------------------------------------
+  theme = shinythemes::shinytheme("journal"), # select a theme
+  # shinythemes::themeSelector(), # uncomment to see different themes
+  ## Set up header-------------------------------------------------------------
+  headerPanel(title = 'PDP Visualization'), # set page title
+  
+  ## Set up sidebar------------------------------------------------------------
+  sidebarPanel(
+    fileInput(inputId = 'data', # allow a csv to be loaded
+              label = 'Select a CSV'),
+    selectInput(inputId = 'xval', # drop down for plotting
+                label = 'X variable', 
+                choices = c('1','2','3')),
+    selectInput(inputId = 'yval', # drop down for plotting
+                label = 'Y variable', 
+                choices = c('1','2','3')),
+    selectInput(inputId = 'pt.type', # drop down for plotting
+                label = 'display', 
+                choices = c('markers','lines')),
+    sliderInput(inputId = 'smooth', # slider for degree of smooting
+                label = 'Degree of Smoothing', 
+                min = 0, 
+                max = 1, 
+                value = 0.5, 
+                step = 0.01)),
+  ## Set main panel------------------------------------------------------------
+  mainPanel( # set up a tabbed panel 
+    tabsetPanel(
+      tabPanel('Plot', plotlyOutput('plot')), # tab for plot
+      tabPanel('Data', tableOutput('table'))) # tabl for data
+  )
 )
 
-
-
-
-
-
-library(shiny)
-
+## Set up Server---------------------------------------------------------------
 server <- shinyServer(function(input, output,session) {
-  ##---------------------------------------------------------------------------
+  
+  ## Load Data-----------------------------------------------------------------
   ## load the data
   filedata <- reactive({
     infile <- input$data
     if (is.null(infile))
       # User has not uploaded a file yet. Use NULL to prevent observeEvent from triggering
       return(NULL)
-    temp <- read.csv(infile$datapath)
+    tbl <- read.csv(infile$datapath)
+    return(tbl)
   })
-  ##---------------------------------------------------------------------------
-  spline <- reactive({
+  
+  ## Spline Fit----------------------------------------------------------------
+  spline <- reactive({ # spine fit uses slider input to control smooting
     infile <- input$data
-    if (is.null(infile))
-      # User has not uploaded a file yet. Use NULL to prevent observeEvent from triggering
-      return(NULL)
     if(!is.null(infile)){
       smooth.spline(filedata()[, input$xval], filedata()[, input$yval], spar = input$smooth)}
   })
-  ##---------------------------------------------------------------------------
+  
+  ## Update Menu Options-------------------------------------------------------
+  ## update menu options once data is loaded
   ## update x value menu
   observeEvent(filedata(), {
     updateSelectInput(session, inputId =  "xval", choices = colnames(filedata()))
   })
-  
-  ##---------------------------------------------------------------------------
   ## update y value menu
   observeEvent(filedata(), {
     updateSelectInput(session, inputId =  "yval", choices = colnames(filedata()))
   })
   
-  ##---------------------------------------------------------------------------
-  
-  
-  ##---------------------------------------------------------------------------
-  ## plot the selected variables
+  ## Plot selected variables---------------------------------------------------
   output$plot <- renderPlotly({
     plot_ly(x = filedata()[, input$xval], 
             y = filedata()[, input$yval], 
-            mode = 'lines', 
+            mode = input$pt.type, 
             type = 'scatter',
             name = input$yval) %>%
       add_lines( x = filedata()[, input$xval],
                  y = fitted(spline()),
                  name = 'spline fit')
-    # add_lines(x = filedata()[, input$xcol],
-    #                     y = as.numeric(fitted(spline())))
   })
+  ## Add table to second tab---------------------------------------------------
+  output$table <- renderTable(filedata())
+  
 })
-
 
 shinyApp(ui = ui, server = server)
