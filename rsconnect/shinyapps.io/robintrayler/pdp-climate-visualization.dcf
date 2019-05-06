@@ -1,0 +1,10 @@
+name: pdp-climate-visualization
+title:
+username:
+account: robintrayler
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 913310
+bundleId: 2064924
+url: https://robintrayler.shinyapps.io/pdp-climate-visualization/
+when: 1557178056.86708
