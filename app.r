@@ -54,14 +54,14 @@ ui <- fluidPage(
                 max = 50, 
                 value = 5, 
                 step = 0.01)),
-
+  
   
   ## Set main panel------------------------------------------------------------
   mainPanel( # set up a tabbed panel 
     tabsetPanel(
       tabPanel('Plot', plotlyOutput('plot')), # tab for plot
-      tabPanel('Data', tableOutput('table')),# tab for data
-      tabPanel('Error', textOutput('err'))
+      tabPanel('Data', tableOutput('table'))#,# tab for data
+      # tabPanel('Error', textOutput('err'))
       # tabPanel('Predictions', textOutput('text'), verbatimTextOutput("value")) 
     )
   )
@@ -98,21 +98,21 @@ server <- shinyServer(function(input, output,session) {
                            winsize = input$smooth2)}
   })
   ## calculate error-----------------------------------------------------------
-  error <- reactive({
-    infile <- input$data
-    if(!is.null(infile)) {
-      I <- length(filedata()[[, input$xval]])
-      er <- vector(length = I)
-      for(i in seq(1:I,1)) {
-        M <- nonparametric_smooth(x = filedata()[-i, input$xval], 
-                                  y = filedata()[-i, input$yval], 
-                                  winsize = input$smooth2)}
-      f <- approxfun(x = M$xmod, y = M$mean)
-      er[i] <- (f(filedata()[i, input$xval]) - filedata()[i, input$yval])
-    }
-    return(sqrt(mean(er^2)))
-  })
-
+  # error <- reactive({
+  #   infile <- input$data
+  #   if(!is.null(infile)) {
+  #     I <- length(filedata()[, input$xval])
+  #     er <- vector(length = I)
+  #     for(i in 1:I){
+  #       fit <- nonparametric_smooth(filedata()[-i,input&xval], filedata()[-i,input&yval], winsize = input$smooth2)
+  #       f <- approxfun(x = filedata()[-i,input&xval], y = fit$mean)
+  #       err[i] <- (f(filedata()[i,input&xval]) - filedata()[i,input&yval])
+  #     }
+  #     sqrt((mean(err[!is.na(err)]^2)))
+  #   }
+  #   verbatimTextOutput(sqrt((mean(err[!is.na(err)]^2))))
+  # })
+  
   ## Update Menu Options-------------------------------------------------------
   ## update menu options once data is loaded
   ## update x value menu
@@ -145,8 +145,9 @@ server <- shinyServer(function(input, output,session) {
   ## Add table to second tab---------------------------------------------------
   output$table <- renderTable(filedata())
   # output$err <- renderText(error())
+  
   ##---------------------------------------------------------------------------
-  })
+})
 
 shinyApp(ui = ui, server = server)
 # rsconnect::deployApp('~/Dropbox/PDP-Climate-Visualization/')
