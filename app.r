@@ -53,7 +53,7 @@ ui <- fluidPage(
                 min = 0, 
                 max = 50, 
                 value = 5, 
-                step = 0.01)),
+                step = 1)),
   
   
   ## Set main panel------------------------------------------------------------
@@ -68,7 +68,7 @@ ui <- fluidPage(
 )
 
 ## Set up Server---------------------------------------------------------------
-server <- shinyServer(function(input, output,session) {
+server <- shinyServer(function(input, output, session) {
   
   ## Load Data-----------------------------------------------------------------
   ## load the data
